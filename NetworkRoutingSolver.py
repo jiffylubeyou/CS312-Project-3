@@ -21,14 +21,13 @@ class NetworkRoutingSolver:
         #       NEED TO USE
         path_edges = []
         total_length = 0
-        node = self.network.nodes[self.source]
-        edges_left = 3
-        while edges_left > 0:
-            edge = node.neighbors[2]
+        node = self.network.nodes[self.dest]
+        while node.node_id != self.source:
+            prevNode = self.network.nodes[self.prev[node.node_id]]
+            edge = self.findEdge(prevNode, node)
             path_edges.append( (edge.src.loc, edge.dest.loc, '{:.0f}'.format(edge.length)) )
             total_length += edge.length
-            node = edge.dest
-            edges_left -= 1
+            node = prevNode
         return {'cost':total_length, 'path':path_edges}
 
     def computeShortestPaths( self, srcIndex, use_heap=False ):
@@ -75,8 +74,16 @@ class NetworkRoutingSolver:
                     prev[neighbor.dest.node_id] = neighbor.src.node_id;
                     H.decreaseKey(oldData, [neighbor.dest.node_id, dist[neighbor.dest.node_id]])
         # dijkstras algorothim now complete
+        self.prev = prev
 
         return
+
+
+    # Given two nodes, this will return the edge between the two nodes
+    def findEdge(self, node1, node2):
+        for neighbor in node1.neighbors:
+            if neighbor.dest.node_id == node2.node_id:
+                return neighbor
 
     # Got the skeleton for this priority queue from online, I refitted it for my purposes
     # data is [index, distance] array tuple

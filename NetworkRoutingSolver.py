@@ -3,6 +3,7 @@
 
 from CS312Graph import *
 import time
+import math
 
 
 class NetworkRoutingSolver:
@@ -15,10 +16,6 @@ class NetworkRoutingSolver:
 
     def getShortestPath( self, destIndex ):
         self.dest = destIndex
-        # TODO: RETURN THE SHORTEST PATH FOR destIndex
-        #       INSTEAD OF THE DUMMY SET OF EDGES BELOW
-        #       IT'S JUST AN EXAMPLE OF THE FORMAT YOU'LL 
-        #       NEED TO USE
         path_edges = []
         total_length = 0
         node = self.network.nodes[self.dest]
@@ -37,11 +34,6 @@ class NetworkRoutingSolver:
             self.heap(srcIndex)
         else:
             self.list(srcIndex)
-
-        # TODO: RUN DIJKSTRA'S TO DETERMINE SHORTEST PATHS.
-        #       ALSO, STORE THE RESULTS FOR THE SUBSEQUENT
-        #       CALL TO getShortestPath(dest_index)
-
 
         t2 = time.time()
         return (t2-t1)
@@ -149,10 +141,10 @@ class NetworkRoutingSolver:
 
     class heapQueue(object):
         def __init__(self):
-            self.h = [None]
+            self.h = []
 
         def isEmpty(self):
-            if len(self.h) == 1:
+            if len(self.h) == 0:
                 return True
             else:
                 return False
@@ -168,25 +160,25 @@ class NetworkRoutingSolver:
             if len(self.h) == 1:
                 return None
             else:
-                x = self.h[1]
-                self.siftdown(self.h[len(self.h) - 1], 1, dictionary)
+                x = self.h[0]
+                self.siftdown(self.h[len(self.h) - 1], 0, dictionary)
                 return x
 
         def makeheap(self, dictionary):
             for node_id in dictionary:
                 self.h.append(node_id)
-            i = len(dictionary.keys())
+            i = len(dictionary.keys()) - 1
             while i != 0:
                 self.siftdown(self.h[i], i, dictionary)
                 i = i - 1
 
             return
         def bubbleup(self, node_id, i, dictionary):
-            p = i // 2
+            p = math.ceil(i / 2)
             while (i != 1) and (dictionary[self.h[p]] > dictionary[node_id]):
                 self.h[i] = self.h[p]
                 i = p
-                p = i // 2
+                p = math.ceil(i / 2)
             self.h[i] = node_id
             return
 

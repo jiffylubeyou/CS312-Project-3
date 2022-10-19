@@ -47,6 +47,33 @@ class NetworkRoutingSolver:
         return (t2-t1)
 
     def heap(self, srcIndex):
+        dist = []
+        prev = []
+        myDictionary = {}
+        H = self.heapQueue()
+        for node in self.network.nodes:
+            dist.append(float('inf'))
+            prev.append(None)
+            myDictionary.update({node.node_id:float('inf')})
+        dist[srcIndex] = 0
+        myDictionary.update({srcIndex:0})
+
+        # this is the "makeQueue in the pseudocode"
+        H.makeheap(myDictionary)
+
+        while not H.isEmpty():
+            u = H.deletemin(myDictionary)
+            uNode = self.network.nodes[u]
+
+            for neighbor in uNode.neighbors:
+                if (dist[neighbor.dest.node_id] > dist[neighbor.src.node_id] + neighbor.length):
+                    dist[neighbor.dest.node_id] = dist[neighbor.src.node_id] + neighbor.length
+                    prev[neighbor.dest.node_id] = neighbor.src.node_id
+                    myDictionary.update({neighbor.dest.node_id:(dist[neighbor.src.node_id] + neighbor.length)})
+                    H.decreaseKey(neighbor.dest.node_id, myDictionary)
+        # dijkstras algorothim now complete
+        self.prev = prev
+
         return
 
     def list(self, srcIndex):
@@ -120,3 +147,65 @@ class NetworkRoutingSolver:
                 print()
                 exit()
 
+    class heapQueue(object):
+        def __init__(self):
+            self.h = [None]
+
+        def isEmpty(self):
+            if len(self.h) == 1:
+                return True
+            else:
+                return False
+
+        def insert(self, node_id, dictionary):
+            self.bubbleup(node_id, (len(self.h) + 1), dictionary)
+            return
+        def decreaseKey(self, node_id, dictionary):
+            self.bubbleup(node_id, self.h.index(node_id), dictionary)
+            return
+
+        def deletemin(self, dictionary):
+            if len(self.h) == 1:
+                return None
+            else:
+                x = self.h[1]
+                self.siftdown(self.h[len(self.h) - 1], 1, dictionary)
+                return x
+
+        def makeheap(self, dictionary):
+            for node_id in dictionary:
+                self.h.append(node_id)
+            i = len(dictionary.keys())
+            while i != 0:
+                self.siftdown(self.h[i], i, dictionary)
+                i = i - 1
+
+            return
+        def bubbleup(self, node_id, i, dictionary):
+            p = i // 2
+            while (i != 1) and (dictionary[self.h[p]] > dictionary[node_id]):
+                self.h[i] = self.h[p]
+                i = p
+                p = i // 2
+            self.h[i] = node_id
+            return
+
+        def siftdown(self, node_id, i, dictionary):
+            c = self.minchild(i, dictionary)
+            while (c != 0) and dictionary[self.h[c]] < dictionary[node_id]:
+                self.h[i] = self.h[c]
+                i = c
+                c = self.minchild(i, dictionary)
+            self.h[i] = node_id
+            return
+
+        def minchild(self, i, dictionary):
+            if ((2 * i) + 1) > len(self.h):
+                return 0
+            elif (2 * i) == len(self.h) - 1:
+                return self.h[(2 * i)]
+            else:
+                if (dictionary[self.h[(2 * i)]] > dictionary[self.h[((2 * i) + 1)]]):
+                    return self.h[((2 * i) + 1)]
+                else:
+                    return self.h[(2 * i)]
